@@ -1,0 +1,16 @@
+{
+  "name": "polymarket-strategy-lab",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test",
+    "smoke": "node src/paper-runner.mjs --duration 120 --poll 5",
+    "dry-run": "node src/paper-runner.mjs --duration 1200 --poll 5",
+    "week:segment": "node src/week-runner.mjs",
+    "dashboard": "node src/build-dashboard.mjs"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

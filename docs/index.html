@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>Polymarket $200 Paper Test</title>
+  <style>
+    :root { color-scheme: dark; --bg:#080b10; --panel:#111720; --line:#253043; --text:#edf4ff; --muted:#91a0b6; --green:#4ee3a2; --red:#ff6b7a; --blue:#69a7ff; }
+    * { box-sizing: border-box; }
+    body { margin:0; background:radial-gradient(circle at 50% -20%,#18263a 0,var(--bg) 42%); color:var(--text); font:15px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace; }
+    main { width:min(1120px,calc(100% - 32px)); margin:0 auto; padding:54px 0 80px; }
+    header { display:flex; justify-content:space-between; gap:24px; align-items:flex-start; margin-bottom:28px; }
+    h1 { font:700 clamp(28px,5vw,54px)/1.05 system-ui,sans-serif; margin:8px 0 12px; letter-spacing:-.04em; }
+    h2 { font:650 18px/1.2 system-ui,sans-serif; margin:0 0 16px; }
+    p { margin:0; color:var(--muted); }
+    .eyebrow { color:var(--blue); text-transform:uppercase; letter-spacing:.12em; font-size:12px; }
+    .pill { border:1px solid var(--line); border-radius:999px; padding:8px 12px; white-space:nowrap; color:var(--muted); }
+    .grid { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin:18px 0; }
+    .panel { background:color-mix(in srgb,var(--panel) 94%,transparent); border:1px solid var(--line); border-radius:14px; padding:20px; box-shadow:0 16px 50px #0005; }
+    .label { color:var(--muted); font-size:12px; text-transform:uppercase; letter-spacing:.08em; }
+    .value { display:block; font:700 30px/1.2 system-ui,sans-serif; margin:8px 0 2px; }
+    .positive { color:var(--green); } .negative { color:var(--red); }
+    .strategies { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin:14px 0; }
+    dl { display:grid; grid-template-columns:1fr auto; gap:9px 18px; margin:0; }
+    dt { color:var(--muted); } dd { margin:0; text-align:right; }
+    #chart { width:100%; height:260px; display:block; margin-top:14px; }
+    table { width:100%; border-collapse:collapse; font-size:13px; }
+    th,td { padding:10px 8px; border-bottom:1px solid var(--line); text-align:left; }
+    th { color:var(--muted); font-weight:500; } td:last-child,th:last-child { text-align:right; }
+    ul { color:var(--muted); padding-left:20px; margin-bottom:0; }
+    .foot { margin-top:14px; font-size:12px; }
+    @media (max-width:760px) { header { display:block; } .pill { display:inline-block; margin-top:18px; } .grid,.strategies { grid-template-columns:1fr; } }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div><div class="eyebrow">Read-only experiment</div><h1>$200 Polymarket paper test</h1><p id="timeline">Loading experiment state…</p></div>
+      <div class="pill" id="status">LOADING</div>
+    </header>
+    <section class="grid">
+      <div class="panel"><div class="label">Current equity</div><span class="value" id="equity">—</span><p>Started with $200</p></div>
+      <div class="panel"><div class="label">Net result</div><span class="value" id="pnl">—</span><p id="return">—</p></div>
+      <div class="panel"><div class="label">BTC markets completed</div><span class="value" id="markets">—</span><p id="record">—</p></div>
+    </section>
+    <section class="strategies">
+      <article class="panel"><h2>Long-duration LP rewards</h2><dl id="lp"></dl></article>
+      <article class="panel"><h2>BTC 15-minute maker</h2><dl id="crypto"></dl></article>
+    </section>
+    <section class="panel"><h2>Portfolio equity</h2><p>Five-minute observations across both virtual $100 allocations.</p><svg id="chart" role="img" aria-label="Portfolio equity chart"></svg></section>
+    <section class="panel" style="margin-top:14px"><h2>Latest completed crypto markets</h2><div style="overflow:auto"><table><thead><tr><th>Market</th><th>Fills</th><th>Rebates</th><th>Result</th></tr></thead><tbody id="rows"></tbody></table></div></section>
+    <section class="panel" style="margin-top:14px"><h2>What this test cannot prove</h2><ul id="limitations"></ul></section>
+    <p class="foot" id="updated"></p>
+  </main>
+  <script>
+    const money = value => `${value < 0 ? "−" : ""}$${Math.abs(Number(value)).toFixed(2)}`;
+    const number = value => Number(value).toLocaleString(undefined,{maximumFractionDigits:2});
+    const text = (id,value) => { document.getElementById(id).textContent = value; };
+    const pair = (root,label,value,klass) => {
+      const dt=document.createElement("dt"); dt.textContent=label;
+      const dd=document.createElement("dd"); dd.textContent=value; if(klass) dd.className=klass;
+      root.append(dt,dd);
+    };
+    function draw(samples) {
+      const svg=document.getElementById("chart"); svg.replaceChildren();
+      if(samples.length<2) { const t=document.createElementNS("http://www.w3.org/2000/svg","text"); t.setAttribute("x","18"); t.setAttribute("y","40"); t.setAttribute("fill","#91a0b6"); t.textContent="Waiting for more samples…"; svg.append(t); return; }
+      const w=1000,h=250,p=18,values=samples.map(s=>s.combinedEquity),min=Math.min(...values,200),max=Math.max(...values,200),span=Math.max(1,max-min);
+      svg.setAttribute("viewBox",`0 0 ${w} ${h}`);
+      const baseline=document.createElementNS("http://www.w3.org/2000/svg","line"); const by=h-p-((200-min)/span)*(h-p*2); baseline.setAttribute("x1",p);baseline.setAttribute("x2",w-p);baseline.setAttribute("y1",by);baseline.setAttribute("y2",by);baseline.setAttribute("stroke","#253043");baseline.setAttribute("stroke-dasharray","6 6");svg.append(baseline);
+      const path=document.createElementNS("http://www.w3.org/2000/svg","path"); const d=values.map((v,i)=>`${i?"L":"M"}${p+i*(w-p*2)/(values.length-1)} ${h-p-((v-min)/span)*(h-p*2)}`).join(" "); path.setAttribute("d",d);path.setAttribute("fill","none");path.setAttribute("stroke",values.at(-1)>=200?"#4ee3a2":"#ff6b7a");path.setAttribute("stroke-width","3");path.setAttribute("vector-effect","non-scaling-stroke");svg.append(path);
+    }
+    fetch(`data.json?t=${Date.now()}`).then(r=>r.json()).then(data=>{
+      const pnlClass=data.totals.netPnl>=0?"positive":"negative";
+      text("status",data.status.toUpperCase()); text("equity",money(data.totals.currentEquity)); text("pnl",money(data.totals.netPnl)); document.getElementById("pnl").className=`value ${pnlClass}`;
+      text("return",`${(data.totals.netPnl/data.totals.startingCapital*100).toFixed(2)}% on virtual capital`); text("markets",String(data.crypto.marketsCompleted)); text("record",`${data.crypto.profitableMarkets} profitable / ${data.crypto.losingMarkets} losing`);
+      text("timeline",`${new Date(data.startedAt).toLocaleString()} → ${new Date(data.endsAt).toLocaleString()}`); text("updated",`Last updated ${new Date(data.generatedAt).toLocaleString()} · No wallet · No orders · No real money`);
+      const lp=document.getElementById("lp"), crypto=document.getElementById("crypto");
+      pair(lp,"Equity",money(data.longLp.currentEquity),data.longLp.netPnl>=0?"positive":"negative"); pair(lp,"Net P&L",money(data.longLp.netPnl)); pair(lp,"Estimated rewards",money(data.longLp.rewardsAccrued)); pair(lp,"Simulated fills",number(data.longLp.fills)); pair(lp,"Market",data.longLp.market??"Waiting");
+      pair(crypto,"Equity",money(data.crypto.currentEquity),data.crypto.netPnl>=0?"positive":"negative"); pair(crypto,"Net P&L",money(data.crypto.netPnl)); pair(crypto,"Completed markets",number(data.crypto.marketsCompleted)); pair(crypto,"Simulated fills",number(data.crypto.totalFills)); pair(crypto,"Estimated rebates",money(data.crypto.totalRebates));
+      for(const market of data.crypto.markets.slice(-12).reverse()){ const tr=document.createElement("tr"); const cells=[market.market,String(market.fills),money(market.rebatesAccrued),money(market.netPnl)]; for(const [i,value] of cells.entries()){const td=document.createElement("td");td.textContent=value;if(i===3)td.className=market.netPnl>=0?"positive":"negative";tr.append(td)} document.getElementById("rows").append(tr); }
+      for(const item of data.limitations){const li=document.createElement("li");li.textContent=item;document.getElementById("limitations").append(li)} draw(data.samples);
+    }).catch(error=>{ text("status","DATA ERROR"); text("timeline",error.message); });
+  </script>
+</body>
+</html>

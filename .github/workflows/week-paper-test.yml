@@ -1,0 +1,107 @@
+name: Seven-day paper test
+
+on:
+  workflow_dispatch:
+    inputs:
+      reset:
+        description: Start a fresh seven-day experiment
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  actions: write
+  contents: write
+  id-token: write
+  pages: write
+
+concurrency:
+  group: polymarket-seven-day-paper-test
+  cancel-in-progress: false
+
+jobs:
+  run-segment:
+    runs-on: ubuntu-latest
+    timeout-minutes: 355
+    steps:
+      - name: Check out the simulator
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+
+      - name: Verify accounting and feed parsing
+        run: npm test
+
+      - name: Run one safe hosted-runner segment
+        env:
+          RESET_EXPERIMENT: ${{ inputs.reset }}
+        run: |
+          reset_flag=""
+          if [[ "$RESET_EXPERIMENT" == "true" ]]; then
+            reset_flag="--reset"
+          fi
+          node src/week-runner.mjs \
+            --state experiment/state.json \
+            --days 7 \
+            --segment-duration 19800 \
+            --poll 10 \
+            --sample 300 \
+            --total 200 \
+            --lp-active 60 \
+            --crypto-active 30 \
+            --crypto-window 15 \
+            $reset_flag
+
+      - name: Build the public, read-only dashboard data
+        run: node src/build-dashboard.mjs experiment/state.json docs/data.json
+
+      - name: Compress raw segment evidence
+        run: find runs -path '*/events.jsonl' -exec gzip -9 '{}' \;
+
+      - name: Save the checkpoint and dashboard
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add experiment/state.json docs/data.json
+          if ! git diff --cached --quiet; then
+            git commit -m "checkpoint seven-day paper test"
+            git push
+          fi
+
+      - name: Upload raw evidence for this segment
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: paper-test-${{ github.run_id }}
+          path: runs/week-*/
+          retention-days: 14
+          if-no-files-found: error
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5
+
+      - name: Package dashboard
+        uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3
+        with:
+          path: docs
+
+      - name: Continue in a fresh runner when needed
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [[ "$(jq -r '.status' experiment/state.json)" == "active" ]]; then
+            gh workflow run week-paper-test.yml --ref "$GITHUB_REF_NAME" -f reset=false
+          fi
+
+  deploy-dashboard:
+    needs: run-segment
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy dashboard
+        id: deployment
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4
