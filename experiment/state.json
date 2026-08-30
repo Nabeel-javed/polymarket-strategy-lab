@@ -35,13 +35,13 @@
         "complementTokenId": "73810911392275096681812732914789906791232813410225649997085568580577931343365",
         "outcome": "Yes"
       },
-      "position": 673.2460000000001,
-      "cash": 39.99999999999999,
+      "position": 336.62300000000005,
+      "cash": 69.622824,
       "seedCost": 30.377176000000002,
       "seedAveragePrice": 0.0902409401615457,
       "rewardsAccrued": 1.1449294851158238,
       "rebatesAccrued": 0,
-      "realizedSpreadPnl": 0,
+      "realizedSpreadPnl": -0.7543519999999997,
       "fills": [
         {
           "type": "bid",
@@ -49,6 +49,13 @@
           "price": 0.088,
           "rebate": 0,
           "at": "2026-08-29T21:43:05.284Z"
+        },
+        {
+          "type": "ask",
+          "size": 336.62300000000005,
+          "price": 0.088,
+          "rebate": 0,
+          "at": "2026-08-30T19:35:04.877Z"
         }
       ],
       "startedAt": 1787960324259,
@@ -56,9 +63,9 @@
       "bidOrder": null,
       "askOrder": {
         "price": 0.088,
-        "remaining": 336.62300000000005,
-        "queueAhead": 64.52274500000007,
-        "placedAtMs": 1788079752463
+        "remaining": 0,
+        "queueAhead": 0,
+        "placedAtMs": 1788114123110
       }
     },
     "latest": {
@@ -69,18 +76,18 @@
       "outcome": "Yes",
       "budget": 100,
       "dailyPool": 10,
-      "bid": 0.087,
-      "ask": 0.088,
-      "position": 673.246,
-      "cash": 40,
+      "bid": 0.14,
+      "ask": 0.143,
+      "position": 336.623,
+      "cash": 69.622824,
       "bidRemaining": 0,
-      "askRemaining": 336.623,
+      "askRemaining": 0,
       "rewardsAccrued": 1.144929,
       "rebatesAccrued": 0,
-      "inventoryMark": 58.572402,
-      "equity": 99.717331,
-      "netPnl": -0.282669,
-      "fills": 1,
+      "inventoryMark": 47.12722,
+      "equity": 117.894973,
+      "netPnl": 17.894973,
+      "fills": 2,
       "initialEstimatedRewardPerDay": 1.605925,
       "seedCost": 30.377176,
       "seedAveragePrice": 0.090241,
@@ -91,11 +98,18 @@
           "price": 0.088,
           "rebate": 0,
           "at": "2026-08-29T21:43:05.284Z"
+        },
+        {
+          "type": "ask",
+          "size": 336.62300000000005,
+          "price": 0.088,
+          "rebate": 0,
+          "at": "2026-08-30T19:35:04.877Z"
         }
       ]
     },
     "minimumEquity": 99.245683,
-    "maximumEquity": 100.390577
+    "maximumEquity": 117.894973
   },
   "crypto": {
     "portfolioValue": 16.796038,
@@ -4653,6 +4667,609 @@
       "longLpRewards": 1.144929,
       "cryptoMarkets": 23,
       "cryptoFills": 195
+    },
+    {
+      "at": "2026-08-30T14:19:56.289Z",
+      "longLpEquity": 99.717331,
+      "cryptoEquity": 16.796038,
+      "combinedEquity": 116.513369,
+      "longLpRewards": 1.144929,
+      "cryptoMarkets": 23,
+      "cryptoFills": 195
+    },
+    {
+      "at": "2026-08-30T14:24:56.412Z",
+      "longLpEquity": 99.717331,
+      "cryptoEquity": 16.796038,
+      "combinedEquity": 116.513369,
+      "longLpRewards": 1.144929,
+      "cryptoMarkets": 23,
+      "cryptoFills": 195
+    },
+    {
+      "at": "2026-08-30T14:29:56.549Z",
+      "longLpEquity": 99.717331,
+      "cryptoEquity": 16.796038,
+      "combinedEquity": 116.513369,
+      "longLpRewards": 1.144929,
+      "cryptoMarkets": 23,
+      "cryptoFills": 195
+    },
+    {
+      "at": "2026-08-30T14:34:56.652Z",
+      "longLpEquity": 99.717331,
+      "cryptoEquity": 16.796038,
+      "combinedEquity": 116.513369,
+      "longLpRewards": 1.144929,
+      "cryptoMarkets": 23,
+      "cryptoFills": 195
+    },
+    {
+      "at": "2026-08-30T14:39:56.822Z",
+      "longLpEquity": 99.717331,
+      "cryptoEquity": 16.796038,
+      "combinedEquity": 116.513369,
+      "longLpRewards": 1.144929,
+      "cryptoMarkets": 23,
+      "cryptoFills": 195
+    },
+    {
+      "at": "2026-08-30T14:44:56.952Z",
+      "longLpEquity": 99.717331,
+      "cryptoEquity": 16.796038,
+      "combinedEquity": 116.513369,
+      "longLpRewards": 1.144929,
+      "cryptoMarkets": 23,
+      "cryptoFills": 195
+    },
+    {
+      "at": "2026-08-30T14:49:57.056Z",
+      "longLpEquity": 99.717331,
+      "cryptoEquity": 16.796038,
+      "combinedEquity": 116.513369,
+      "longLpRewards": 1.144929,
+      "cryptoMarkets": 23,
+      "cryptoFills": 195
+    },
+    {
+      "at": "2026-08-30T14:54:57.179Z",
+      "longLpEquity": 99.717331,
+      "cryptoEquity": 16.796038,
+      "combinedEquity": 116.513369,
+      "longLpRewards": 1.144929,
+      "cryptoMarkets": 23,
+      "cryptoFills": 195
+    },
+    {
+      "at": "2026-08-30T14:59:57.359Z",
+      "longLpEquity": 99.717331,
+      "cryptoEquity": 16.796038,
+      "combinedEquity": 116.513369,
+      "longLpRewards": 1.144929,
+      "cryptoMarkets": 23,
+      "cryptoFills": 195
+    },
+    {
+      "at": "2026-08-30T15:04:57.480Z",
+      "longLpEquity": 99.717331,
+      "cryptoEquity": 16.796038,
+      "combinedEquity": 116.513369,
+      "longLpRewards": 1.144929,
+      "cryptoMarkets": 23,
+      "cryptoFills": 195
+    },
+    {
+      "at": "2026-08-30T15:09:57.680Z",
+      "longLpEquity": 99.717331,
+      "cryptoEquity": 16.796038,
+      "combinedEquity": 116.513369,
+      "longLpRewards": 1.144929,
+      "cryptoMarkets": 23,
+      "cryptoFills": 195
+    },
+    {
+      "at": "2026-08-30T15:14:57.676Z",
+      "longLpEquity": 99.717331,
+      "cryptoEquity": 16.796038,
+      "combinedEquity": 116.513369,
+      "longLpRewards": 1.144929,
+      "cryptoMarkets": 23,
+      "cryptoFills": 195
+    },
+    {
+      "at": "2026-08-30T15:19:57.790Z",
+      "longLpEquity": 99.717331,
+      "cryptoEquity": 16.796038,
+      "combinedEquity": 116.513369,
+      "longLpRewards": 1.144929,
+      "cryptoMarkets": 23,
+      "cryptoFills": 195
+    },
+    {
+      "at": "2026-08-30T15:24:57.906Z",
+      "longLpEquity": 99.717331,
+      "cryptoEquity": 16.796038,
+      "combinedEquity": 116.513369,
+      "longLpRewards": 1.144929,
+      "cryptoMarkets": 23,
+      "cryptoFills": 195
+    },
+    {
+      "at": "2026-08-30T15:29:58.059Z",
+      "longLpEquity": 99.717331,
+      "cryptoEquity": 16.796038,
+      "combinedEquity": 116.513369,
+      "longLpRewards": 1.144929,
+      "cryptoMarkets": 23,
+      "cryptoFills": 195
+    },
+    {
+      "at": "2026-08-30T15:34:58.202Z",
+      "longLpEquity": 99.717331,
+      "cryptoEquity": 16.796038,
+      "combinedEquity": 116.513369,
+      "longLpRewards": 1.144929,
+      "cryptoMarkets": 23,
+      "cryptoFills": 195
+    },
+    {
+      "at": "2026-08-30T15:39:58.333Z",
+      "longLpEquity": 99.717331,
+      "cryptoEquity": 16.796038,
+      "combinedEquity": 116.513369,
+      "longLpRewards": 1.144929,
+      "cryptoMarkets": 23,
+      "cryptoFills": 195
+    },
+    {
+      "at": "2026-08-30T15:44:58.460Z",
+      "longLpEquity": 99.717331,
+      "cryptoEquity": 16.796038,
+      "combinedEquity": 116.513369,
+      "longLpRewards": 1.144929,
+      "cryptoMarkets": 23,
+      "cryptoFills": 195
+    },
+    {
+      "at": "2026-08-30T15:49:58.597Z",
+      "longLpEquity": 99.717331,
+      "cryptoEquity": 16.796038,
+      "combinedEquity": 116.513369,
+      "longLpRewards": 1.144929,
+      "cryptoMarkets": 23,
+      "cryptoFills": 195
+    },
+    {
+      "at": "2026-08-30T15:54:58.731Z",
+      "longLpEquity": 99.717331,
+      "cryptoEquity": 16.796038,
+      "combinedEquity": 116.513369,
+      "longLpRewards": 1.144929,
+      "cryptoMarkets": 23,
+      "cryptoFills": 195
+    },
+    {
+      "at": "2026-08-30T15:59:58.877Z",
+      "longLpEquity": 99.717331,
+      "cryptoEquity": 16.796038,
+      "combinedEquity": 116.513369,
+      "longLpRewards": 1.144929,
+      "cryptoMarkets": 23,
+      "cryptoFills": 195
+    },
+    {
+      "at": "2026-08-30T16:04:59.004Z",
+      "longLpEquity": 99.717331,
+      "cryptoEquity": 16.796038,
+      "combinedEquity": 116.513369,
+      "longLpRewards": 1.144929,
+      "cryptoMarkets": 23,
+      "cryptoFills": 195
+    },
+    {
+      "at": "2026-08-30T16:09:59.174Z",
+      "longLpEquity": 99.717331,
+      "cryptoEquity": 16.796038,
+      "combinedEquity": 116.513369,
+      "longLpRewards": 1.144929,
+      "cryptoMarkets": 23,
+      "cryptoFills": 195
+    },
+    {
+      "at": "2026-08-30T16:14:59.272Z",
+      "longLpEquity": 99.717331,
+      "cryptoEquity": 16.796038,
+      "combinedEquity": 116.513369,
+      "longLpRewards": 1.144929,
+      "cryptoMarkets": 23,
+      "cryptoFills": 195
+    },
+    {
+      "at": "2026-08-30T16:19:59.399Z",
+      "longLpEquity": 99.717331,
+      "cryptoEquity": 16.796038,
+      "combinedEquity": 116.513369,
+      "longLpRewards": 1.144929,
+      "cryptoMarkets": 23,
+      "cryptoFills": 195
+    },
+    {
+      "at": "2026-08-30T16:24:59.526Z",
+      "longLpEquity": 99.717331,
+      "cryptoEquity": 16.796038,
+      "combinedEquity": 116.513369,
+      "longLpRewards": 1.144929,
+      "cryptoMarkets": 23,
+      "cryptoFills": 195
+    },
+    {
+      "at": "2026-08-30T16:29:59.607Z",
+      "longLpEquity": 99.717331,
+      "cryptoEquity": 16.796038,
+      "combinedEquity": 116.513369,
+      "longLpRewards": 1.144929,
+      "cryptoMarkets": 23,
+      "cryptoFills": 195
+    },
+    {
+      "at": "2026-08-30T16:34:59.737Z",
+      "longLpEquity": 99.717331,
+      "cryptoEquity": 16.796038,
+      "combinedEquity": 116.513369,
+      "longLpRewards": 1.144929,
+      "cryptoMarkets": 23,
+      "cryptoFills": 195
+    },
+    {
+      "at": "2026-08-30T16:39:59.886Z",
+      "longLpEquity": 99.717331,
+      "cryptoEquity": 16.796038,
+      "combinedEquity": 116.513369,
+      "longLpRewards": 1.144929,
+      "cryptoMarkets": 23,
+      "cryptoFills": 195
+    },
+    {
+      "at": "2026-08-30T16:45:00.002Z",
+      "longLpEquity": 99.717331,
+      "cryptoEquity": 16.796038,
+      "combinedEquity": 116.513369,
+      "longLpRewards": 1.144929,
+      "cryptoMarkets": 23,
+      "cryptoFills": 195
+    },
+    {
+      "at": "2026-08-30T16:50:00.168Z",
+      "longLpEquity": 99.717331,
+      "cryptoEquity": 16.796038,
+      "combinedEquity": 116.513369,
+      "longLpRewards": 1.144929,
+      "cryptoMarkets": 23,
+      "cryptoFills": 195
+    },
+    {
+      "at": "2026-08-30T16:55:00.287Z",
+      "longLpEquity": 99.717331,
+      "cryptoEquity": 16.796038,
+      "combinedEquity": 116.513369,
+      "longLpRewards": 1.144929,
+      "cryptoMarkets": 23,
+      "cryptoFills": 195
+    },
+    {
+      "at": "2026-08-30T17:00:00.409Z",
+      "longLpEquity": 99.717331,
+      "cryptoEquity": 16.796038,
+      "combinedEquity": 116.513369,
+      "longLpRewards": 1.144929,
+      "cryptoMarkets": 23,
+      "cryptoFills": 195
+    },
+    {
+      "at": "2026-08-30T17:05:00.541Z",
+      "longLpEquity": 99.717331,
+      "cryptoEquity": 16.796038,
+      "combinedEquity": 116.513369,
+      "longLpRewards": 1.144929,
+      "cryptoMarkets": 23,
+      "cryptoFills": 195
+    },
+    {
+      "at": "2026-08-30T17:10:00.675Z",
+      "longLpEquity": 99.717331,
+      "cryptoEquity": 16.796038,
+      "combinedEquity": 116.513369,
+      "longLpRewards": 1.144929,
+      "cryptoMarkets": 23,
+      "cryptoFills": 195
+    },
+    {
+      "at": "2026-08-30T17:15:00.822Z",
+      "longLpEquity": 99.717331,
+      "cryptoEquity": 16.796038,
+      "combinedEquity": 116.513369,
+      "longLpRewards": 1.144929,
+      "cryptoMarkets": 23,
+      "cryptoFills": 195
+    },
+    {
+      "at": "2026-08-30T17:20:00.997Z",
+      "longLpEquity": 99.717331,
+      "cryptoEquity": 16.796038,
+      "combinedEquity": 116.513369,
+      "longLpRewards": 1.144929,
+      "cryptoMarkets": 23,
+      "cryptoFills": 195
+    },
+    {
+      "at": "2026-08-30T17:25:01.143Z",
+      "longLpEquity": 99.717331,
+      "cryptoEquity": 16.796038,
+      "combinedEquity": 116.513369,
+      "longLpRewards": 1.144929,
+      "cryptoMarkets": 23,
+      "cryptoFills": 195
+    },
+    {
+      "at": "2026-08-30T17:30:01.297Z",
+      "longLpEquity": 99.717331,
+      "cryptoEquity": 16.796038,
+      "combinedEquity": 116.513369,
+      "longLpRewards": 1.144929,
+      "cryptoMarkets": 23,
+      "cryptoFills": 195
+    },
+    {
+      "at": "2026-08-30T17:35:01.481Z",
+      "longLpEquity": 99.717331,
+      "cryptoEquity": 16.796038,
+      "combinedEquity": 116.513369,
+      "longLpRewards": 1.144929,
+      "cryptoMarkets": 23,
+      "cryptoFills": 195
+    },
+    {
+      "at": "2026-08-30T17:40:01.602Z",
+      "longLpEquity": 99.717331,
+      "cryptoEquity": 16.796038,
+      "combinedEquity": 116.513369,
+      "longLpRewards": 1.144929,
+      "cryptoMarkets": 23,
+      "cryptoFills": 195
+    },
+    {
+      "at": "2026-08-30T17:45:01.765Z",
+      "longLpEquity": 99.717331,
+      "cryptoEquity": 16.796038,
+      "combinedEquity": 116.513369,
+      "longLpRewards": 1.144929,
+      "cryptoMarkets": 23,
+      "cryptoFills": 195
+    },
+    {
+      "at": "2026-08-30T17:50:01.875Z",
+      "longLpEquity": 99.717331,
+      "cryptoEquity": 16.796038,
+      "combinedEquity": 116.513369,
+      "longLpRewards": 1.144929,
+      "cryptoMarkets": 23,
+      "cryptoFills": 195
+    },
+    {
+      "at": "2026-08-30T17:55:02.041Z",
+      "longLpEquity": 99.717331,
+      "cryptoEquity": 16.796038,
+      "combinedEquity": 116.513369,
+      "longLpRewards": 1.144929,
+      "cryptoMarkets": 23,
+      "cryptoFills": 195
+    },
+    {
+      "at": "2026-08-30T18:00:02.171Z",
+      "longLpEquity": 99.717331,
+      "cryptoEquity": 16.796038,
+      "combinedEquity": 116.513369,
+      "longLpRewards": 1.144929,
+      "cryptoMarkets": 23,
+      "cryptoFills": 195
+    },
+    {
+      "at": "2026-08-30T18:05:02.324Z",
+      "longLpEquity": 99.717331,
+      "cryptoEquity": 16.796038,
+      "combinedEquity": 116.513369,
+      "longLpRewards": 1.144929,
+      "cryptoMarkets": 23,
+      "cryptoFills": 195
+    },
+    {
+      "at": "2026-08-30T18:10:02.484Z",
+      "longLpEquity": 99.717331,
+      "cryptoEquity": 16.796038,
+      "combinedEquity": 116.513369,
+      "longLpRewards": 1.144929,
+      "cryptoMarkets": 23,
+      "cryptoFills": 195
+    },
+    {
+      "at": "2026-08-30T18:15:02.673Z",
+      "longLpEquity": 99.717331,
+      "cryptoEquity": 16.796038,
+      "combinedEquity": 116.513369,
+      "longLpRewards": 1.144929,
+      "cryptoMarkets": 23,
+      "cryptoFills": 195
+    },
+    {
+      "at": "2026-08-30T18:20:02.818Z",
+      "longLpEquity": 99.717331,
+      "cryptoEquity": 16.796038,
+      "combinedEquity": 116.513369,
+      "longLpRewards": 1.144929,
+      "cryptoMarkets": 23,
+      "cryptoFills": 195
+    },
+    {
+      "at": "2026-08-30T18:25:03.003Z",
+      "longLpEquity": 99.717331,
+      "cryptoEquity": 16.796038,
+      "combinedEquity": 116.513369,
+      "longLpRewards": 1.144929,
+      "cryptoMarkets": 23,
+      "cryptoFills": 195
+    },
+    {
+      "at": "2026-08-30T18:30:03.117Z",
+      "longLpEquity": 99.717331,
+      "cryptoEquity": 16.796038,
+      "combinedEquity": 116.513369,
+      "longLpRewards": 1.144929,
+      "cryptoMarkets": 23,
+      "cryptoFills": 195
+    },
+    {
+      "at": "2026-08-30T18:35:03.289Z",
+      "longLpEquity": 99.717331,
+      "cryptoEquity": 16.796038,
+      "combinedEquity": 116.513369,
+      "longLpRewards": 1.144929,
+      "cryptoMarkets": 23,
+      "cryptoFills": 195
+    },
+    {
+      "at": "2026-08-30T18:40:03.429Z",
+      "longLpEquity": 99.717331,
+      "cryptoEquity": 16.796038,
+      "combinedEquity": 116.513369,
+      "longLpRewards": 1.144929,
+      "cryptoMarkets": 23,
+      "cryptoFills": 195
+    },
+    {
+      "at": "2026-08-30T18:45:03.570Z",
+      "longLpEquity": 99.717331,
+      "cryptoEquity": 16.796038,
+      "combinedEquity": 116.513369,
+      "longLpRewards": 1.144929,
+      "cryptoMarkets": 23,
+      "cryptoFills": 195
+    },
+    {
+      "at": "2026-08-30T18:50:03.761Z",
+      "longLpEquity": 99.717331,
+      "cryptoEquity": 16.796038,
+      "combinedEquity": 116.513369,
+      "longLpRewards": 1.144929,
+      "cryptoMarkets": 23,
+      "cryptoFills": 195
+    },
+    {
+      "at": "2026-08-30T18:55:03.873Z",
+      "longLpEquity": 99.717331,
+      "cryptoEquity": 16.796038,
+      "combinedEquity": 116.513369,
+      "longLpRewards": 1.144929,
+      "cryptoMarkets": 23,
+      "cryptoFills": 195
+    },
+    {
+      "at": "2026-08-30T19:00:04.063Z",
+      "longLpEquity": 99.717331,
+      "cryptoEquity": 16.796038,
+      "combinedEquity": 116.513369,
+      "longLpRewards": 1.144929,
+      "cryptoMarkets": 23,
+      "cryptoFills": 195
+    },
+    {
+      "at": "2026-08-30T19:05:04.160Z",
+      "longLpEquity": 99.717331,
+      "cryptoEquity": 16.796038,
+      "combinedEquity": 116.513369,
+      "longLpRewards": 1.144929,
+      "cryptoMarkets": 23,
+      "cryptoFills": 195
+    },
+    {
+      "at": "2026-08-30T19:10:04.293Z",
+      "longLpEquity": 99.717331,
+      "cryptoEquity": 16.796038,
+      "combinedEquity": 116.513369,
+      "longLpRewards": 1.144929,
+      "cryptoMarkets": 23,
+      "cryptoFills": 195
+    },
+    {
+      "at": "2026-08-30T19:15:04.453Z",
+      "longLpEquity": 99.717331,
+      "cryptoEquity": 16.796038,
+      "combinedEquity": 116.513369,
+      "longLpRewards": 1.144929,
+      "cryptoMarkets": 23,
+      "cryptoFills": 195
+    },
+    {
+      "at": "2026-08-30T19:20:04.575Z",
+      "longLpEquity": 99.717331,
+      "cryptoEquity": 16.796038,
+      "combinedEquity": 116.513369,
+      "longLpRewards": 1.144929,
+      "cryptoMarkets": 23,
+      "cryptoFills": 195
+    },
+    {
+      "at": "2026-08-30T19:25:04.644Z",
+      "longLpEquity": 99.717331,
+      "cryptoEquity": 16.796038,
+      "combinedEquity": 116.513369,
+      "longLpRewards": 1.144929,
+      "cryptoMarkets": 23,
+      "cryptoFills": 195
+    },
+    {
+      "at": "2026-08-30T19:30:04.765Z",
+      "longLpEquity": 99.717331,
+      "cryptoEquity": 16.796038,
+      "combinedEquity": 116.513369,
+      "longLpRewards": 1.144929,
+      "cryptoMarkets": 23,
+      "cryptoFills": 195
+    },
+    {
+      "at": "2026-08-30T19:35:04.877Z",
+      "longLpEquity": 100.053954,
+      "cryptoEquity": 16.796038,
+      "combinedEquity": 116.849992,
+      "longLpRewards": 1.144929,
+      "cryptoMarkets": 23,
+      "cryptoFills": 195
+    },
+    {
+      "at": "2026-08-30T19:40:04.992Z",
+      "longLpEquity": 116.211858,
+      "cryptoEquity": 16.796038,
+      "combinedEquity": 133.007896,
+      "longLpRewards": 1.144929,
+      "cryptoMarkets": 23,
+      "cryptoFills": 195
+    },
+    {
+      "at": "2026-08-30T19:45:05.150Z",
+      "longLpEquity": 117.894973,
+      "cryptoEquity": 16.796038,
+      "combinedEquity": 134.691011,
+      "longLpRewards": 1.144929,
+      "cryptoMarkets": 23,
+      "cryptoFills": 195
+    },
+    {
+      "at": "2026-08-30T19:50:05.296Z",
+      "longLpEquity": 117.894973,
+      "cryptoEquity": 16.796038,
+      "combinedEquity": 134.691011,
+      "longLpRewards": 1.144929,
+      "cryptoMarkets": 23,
+      "cryptoFills": 195
     }
   ],
   "segments": [
@@ -4711,6 +5328,14 @@
       "elapsedSeconds": 19809.361,
       "errors": 0,
       "combinedEquity": 116.513369
+    },
+    {
+      "segmentId": "2026-08-30T14-19-55-360Z",
+      "startedAt": "2026-08-30T14:19:55.360Z",
+      "completedAt": "2026-08-30T19:50:05.297Z",
+      "elapsedSeconds": 19809.937,
+      "errors": 0,
+      "combinedEquity": 134.691011
     }
   ]
 }
