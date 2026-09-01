@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="dark">
-  <title>Polymarket $200 Paper Test</title>
+  <title>Polymarket $200 LP-Only Paper Test</title>
   <style>
     :root { color-scheme: dark; --bg:#080b10; --panel:#111720; --line:#253043; --text:#edf4ff; --muted:#91a0b6; --green:#4ee3a2; --red:#ff6b7a; --blue:#69a7ff; }
     * { box-sizing: border-box; }
@@ -21,7 +21,7 @@
     .label { color:var(--muted); font-size:12px; text-transform:uppercase; letter-spacing:.08em; }
     .value { display:block; font:700 30px/1.2 system-ui,sans-serif; margin:8px 0 2px; }
     .positive { color:var(--green); } .negative { color:var(--red); }
-    .strategies { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin:14px 0; }
+    .strategies { display:grid; grid-template-columns:1fr; gap:14px; margin:14px 0; }
     dl { display:grid; grid-template-columns:1fr auto; gap:9px 18px; margin:0; }
     dt { color:var(--muted); } dd { margin:0; text-align:right; }
     #chart { width:100%; height:260px; display:block; margin-top:14px; }
@@ -36,20 +36,18 @@
 <body>
   <main>
     <header>
-      <div><div class="eyebrow">Read-only experiment</div><h1>$200 Polymarket paper test</h1><p id="timeline">Loading experiment state…</p></div>
+      <div><div class="eyebrow">Read-only LP experiment</div><h1>$200 Polymarket LP-only test</h1><p id="timeline">Loading experiment state…</p></div>
       <div class="pill" id="status">LOADING</div>
     </header>
     <section class="grid">
       <div class="panel"><div class="label">Current equity</div><span class="value" id="equity">—</span><p>Started with $200</p></div>
       <div class="panel"><div class="label">Net result</div><span class="value" id="pnl">—</span><p id="return">—</p></div>
-      <div class="panel"><div class="label">BTC markets completed</div><span class="value" id="markets">—</span><p id="record">—</p></div>
+      <div class="panel"><div class="label">Estimated LP rewards</div><span class="value" id="rewards">—</span><p id="quotes">—</p></div>
     </section>
     <section class="strategies">
       <article class="panel"><h2>Long-duration LP rewards</h2><dl id="lp"></dl></article>
-      <article class="panel"><h2>BTC 15-minute maker</h2><dl id="crypto"></dl></article>
     </section>
-    <section class="panel"><h2>Portfolio equity</h2><p>Five-minute observations across both virtual $100 allocations.</p><svg id="chart" role="img" aria-label="Portfolio equity chart"></svg></section>
-    <section class="panel" style="margin-top:14px"><h2>Latest completed crypto markets</h2><div style="overflow:auto"><table><thead><tr><th>Market</th><th>Fills</th><th>Rebates</th><th>Result</th></tr></thead><tbody id="rows"></tbody></table></div></section>
+    <section class="panel"><h2>LP equity</h2><p>Five-minute observations of the virtual $200 LP portfolio.</p><svg id="chart" role="img" aria-label="LP equity chart"></svg></section>
     <section class="panel" style="margin-top:14px"><h2>What this test cannot prove</h2><ul id="limitations"></ul></section>
     <p class="foot" id="updated"></p>
   </main>
@@ -73,12 +71,10 @@
     fetch(`data.json?t=${Date.now()}`).then(r=>r.json()).then(data=>{
       const pnlClass=data.totals.netPnl>=0?"positive":"negative";
       text("status",data.status.toUpperCase()); text("equity",money(data.totals.currentEquity)); text("pnl",money(data.totals.netPnl)); document.getElementById("pnl").className=`value ${pnlClass}`;
-      text("return",`${(data.totals.netPnl/data.totals.startingCapital*100).toFixed(2)}% on virtual capital`); text("markets",String(data.crypto.marketsCompleted)); text("record",`${data.crypto.profitableMarkets} profitable / ${data.crypto.losingMarkets} losing`);
+      text("return",`${(data.totals.netPnl/data.totals.startingCapital*100).toFixed(2)}% on virtual capital`); text("rewards",money(data.longLp.rewardsAccrued)); text("quotes",`${number(data.longLp.quoteRefreshes)} quote cycles`);
       text("timeline",`${new Date(data.startedAt).toLocaleString()} → ${new Date(data.endsAt).toLocaleString()}`); text("updated",`Last updated ${new Date(data.generatedAt).toLocaleString()} · No wallet · No orders · No real money`);
-      const lp=document.getElementById("lp"), crypto=document.getElementById("crypto");
-      pair(lp,"Equity",money(data.longLp.currentEquity),data.longLp.netPnl>=0?"positive":"negative"); pair(lp,"Net P&L",money(data.longLp.netPnl)); pair(lp,"Estimated rewards",money(data.longLp.rewardsAccrued)); pair(lp,"Simulated fills",number(data.longLp.fills)); pair(lp,"Market",data.longLp.market??"Waiting");
-      pair(crypto,"Equity",money(data.crypto.currentEquity),data.crypto.netPnl>=0?"positive":"negative"); pair(crypto,"Net P&L",money(data.crypto.netPnl)); pair(crypto,"Completed markets",number(data.crypto.marketsCompleted)); pair(crypto,"Simulated fills",number(data.crypto.totalFills)); pair(crypto,"Estimated rebates",money(data.crypto.totalRebates));
-      for(const market of data.crypto.markets.slice(-12).reverse()){ const tr=document.createElement("tr"); const cells=[market.market,String(market.fills),money(market.rebatesAccrued),money(market.netPnl)]; for(const [i,value] of cells.entries()){const td=document.createElement("td");td.textContent=value;if(i===3)td.className=market.netPnl>=0?"positive":"negative";tr.append(td)} document.getElementById("rows").append(tr); }
+      const lp=document.getElementById("lp");
+      pair(lp,"Equity",money(data.longLp.currentEquity),data.longLp.netPnl>=0?"positive":"negative"); pair(lp,"Net P&L",money(data.longLp.netPnl)); pair(lp,"Estimated rewards accrued",money(data.longLp.rewardsAccrued)); pair(lp,"Estimated reward/day at entry",money(data.longLp.initialEstimatedRewardPerDay)); pair(lp,"Daily market pool",money(data.longLp.dailyPool)); pair(lp,"Simulated fills",number(data.longLp.fills)); pair(lp,"Quote refreshes",number(data.longLp.quoteRefreshes)); pair(lp,"Bid / ask",`${data.longLp.bid.toFixed(3)} / ${data.longLp.ask.toFixed(3)}`); pair(lp,"Working bid / ask shares",`${number(data.longLp.bidRemaining)} / ${number(data.longLp.askRemaining)}`); pair(lp,"Seed cost",money(data.longLp.seedCost)); pair(lp,"Seed average",`${(data.longLp.seedAveragePrice*100).toFixed(2)}¢`); pair(lp,"Market",data.longLp.market??"Waiting");
       for(const item of data.limitations){const li=document.createElement("li");li.textContent=item;document.getElementById("limitations").append(li)} draw(data.samples);
     }).catch(error=>{ text("status","DATA ERROR"); text("timeline",error.message); });
   </script>

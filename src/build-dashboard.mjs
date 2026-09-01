@@ -8,7 +8,9 @@ const state = JSON.parse(await readFile(statePath, "utf8"));
 const allocation = state.configuration.allocation;
 const longLp = state.longLp.latest;
 const activeCrypto = state.crypto.activeStats?.last ?? null;
-const cryptoEquity = activeCrypto?.equity ?? state.crypto.portfolioValue;
+const cryptoEquity = state.configuration.lpOnly
+  ? 0
+  : activeCrypto?.equity ?? state.crypto.portfolioValue;
 const combinedEquity = (longLp?.equity ?? allocation.longLp) + cryptoEquity;
 const cryptoPnl = cryptoEquity - allocation.cryptoMaker;
 const lpPnl = (longLp?.equity ?? allocation.longLp) - allocation.longLp;
@@ -37,6 +39,15 @@ const dashboard = {
     rewardsAccrued: longLp?.rewardsAccrued ?? 0,
     rebatesAccrued: longLp?.rebatesAccrued ?? 0,
     fills: longLp?.fills ?? 0,
+    quoteRefreshes: longLp?.quoteRefreshes ?? 0,
+    bidRemaining: longLp?.bidRemaining ?? 0,
+    askRemaining: longLp?.askRemaining ?? 0,
+    bid: longLp?.bid ?? 0,
+    ask: longLp?.ask ?? 0,
+    dailyPool: longLp?.dailyPool ?? 0,
+    initialEstimatedRewardPerDay: longLp?.initialEstimatedRewardPerDay ?? 0,
+    seedCost: longLp?.seedCost ?? 0,
+    seedAveragePrice: longLp?.seedAveragePrice ?? 0,
     latest: longLp,
   },
   crypto: {
@@ -55,7 +66,8 @@ const dashboard = {
   segments: state.segments,
   limitations: [
     "No real orders are placed, so LP rewards are estimated from visible competition rather than paid by Polymarket.",
-    "Maker fills use public trade messages and visible queue depth; private queue identity is unavailable.",
+    "Simulated maker fills use public trade messages and visible queue depth; private queue identity is unavailable.",
+    "When a reward-eligible leg is depleted, both quotes rejoin the back of the visible queue before rewards resume.",
     "Short gaps can occur while GitHub starts the next hosted runner.",
   ],
 };

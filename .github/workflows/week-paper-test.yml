@@ -1,4 +1,4 @@
-name: Seven-day paper test
+name: Seven-day LP-only paper test
 
 on:
   workflow_dispatch:
@@ -50,9 +50,9 @@ jobs:
             --poll 10 \
             --sample 300 \
             --total 200 \
-            --lp-active 60 \
-            --crypto-active 30 \
-            --crypto-window 15 \
+            --lp-active 120 \
+            --lp-only \
+            --maintain-lp-quotes \
             $reset_flag
 
       - name: Build the public, read-only dashboard data

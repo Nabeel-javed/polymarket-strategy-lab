@@ -18,6 +18,8 @@ function parseArgs(argv) {
     cryptoWindow: 15,
     reset: false,
     checkpointAtTarget: false,
+    lpOnly: false,
+    maintainLpQuotes: false,
   };
   for (let index = 0; index < argv.length; index += 1) {
     const flag = argv[index];
@@ -27,6 +29,14 @@ function parseArgs(argv) {
     }
     if (flag === "--checkpoint-at-target") {
       options.checkpointAtTarget = true;
+      continue;
+    }
+    if (flag === "--lp-only") {
+      options.lpOnly = true;
+      continue;
+    }
+    if (flag === "--maintain-lp-quotes") {
+      options.maintainLpQuotes = true;
       continue;
     }
     const value = argv[index + 1];
@@ -80,7 +90,9 @@ async function writeJsonAtomic(path, value) {
 
 function newExperiment(options) {
   const startedAt = new Date();
-  const allocation = options.total / 2;
+  const allocation = options.lpOnly
+    ? { longLp: options.total, cryptoMaker: 0 }
+    : { longLp: options.total / 2, cryptoMaker: options.total / 2 };
   return {
     version: 1,
     mode: "paper-only",
@@ -90,9 +102,12 @@ function newExperiment(options) {
     completedAt: null,
     configuration: {
       total: options.total,
-      allocation: { longLp: allocation, cryptoMaker: allocation },
-      lpActive: Math.min(options.lpActive, allocation * 0.7),
-      cryptoActive: Math.min(options.cryptoActive, allocation * 0.4),
+      allocation,
+      lpOnly: options.lpOnly,
+      maintainLpQuotes: options.maintainLpQuotes,
+      maximumCheapPrice: 0.05,
+      lpActive: Math.min(options.lpActive, allocation.longLp * 0.7),
+      cryptoActive: Math.min(options.cryptoActive, allocation.cryptoMaker * 0.4),
       cryptoWindow: options.cryptoWindow,
       pollSeconds: options.poll,
       sampleSeconds: options.sample,
@@ -106,11 +121,11 @@ function newExperiment(options) {
     longLp: {
       checkpoint: null,
       latest: null,
-      minimumEquity: allocation,
-      maximumEquity: allocation,
+      minimumEquity: allocation.longLp,
+      maximumEquity: allocation.longLp,
     },
     crypto: {
-      portfolioValue: allocation,
+      portfolioValue: allocation.cryptoMaker,
       active: null,
       activeStats: null,
       markets: [],
@@ -173,7 +188,10 @@ const longLp = state.longLp.checkpoint
   : await LongLpPaperStrategy.create({
       budget: allocation.longLp,
       activeBudget: state.configuration.lpActive,
+      maximumCheapPrice: state.configuration.maximumCheapPrice,
+      maintainQuotes: state.configuration.maintainLpQuotes,
     });
+longLp.maintainQuotes = Boolean(state.configuration.maintainLpQuotes);
 lpSnapshot = await longLp.initialize({ realtime: true });
 state.longLp.latest = lpSnapshot;
 
@@ -205,6 +223,7 @@ async function connectCryptoFeed() {
 }
 
 async function launchCrypto() {
+  if (state.configuration.lpOnly) return;
   if (activeCrypto || Date.now() >= targetEndsAtMs || Date.now() >= experimentEndsAtMs) return;
   if (state.crypto.portfolioValue < 20) return;
   activeCrypto = await CryptoMakerPaperStrategy.create({
@@ -329,7 +348,9 @@ while (!stopping && Date.now() < hardEndsAtMs) {
   }
 
   if (tickStartedAt - lastSampleAt >= options.sample * 1000) {
-    const cryptoEquity = cryptoSnapshot?.equity ?? state.crypto.portfolioValue;
+    const cryptoEquity = state.configuration.lpOnly
+      ? 0
+      : cryptoSnapshot?.equity ?? state.crypto.portfolioValue;
     const sample = {
       at: new Date().toISOString(),
       longLpEquity: lpSnapshot.equity,
@@ -361,7 +382,9 @@ if (reachedExperimentEnd && !activeCrypto) {
   state.completedAt = segmentCompletedAt.toISOString();
 }
 
-const cryptoLatestEquity = cryptoSnapshot?.equity ?? state.crypto.portfolioValue;
+const cryptoLatestEquity = state.configuration.lpOnly
+  ? 0
+  : cryptoSnapshot?.equity ?? state.crypto.portfolioValue;
 const summary = {
   segmentId,
   mode: "paper-only",

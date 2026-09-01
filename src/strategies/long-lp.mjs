@@ -75,19 +75,41 @@ async function evaluateMarket(market, activeBudget) {
 }
 
 export class LongLpPaperStrategy {
-  static async create({ budget = 100, activeBudget = 60 } = {}) {
-    let markets = await discoverLongLpMarkets();
-    if (markets.length === 0) markets = [await getMarketById(XI_MARKET_ID)];
+  static async create({
+    budget = 100,
+    activeBudget = 60,
+    maximumCheapPrice = 0.05,
+    maintainQuotes = false,
+  } = {}) {
+    let markets = (await discoverLongLpMarkets()).filter(
+      (market) => Math.min(...market.prices) < maximumCheapPrice,
+    );
+    if (markets.length === 0) {
+      const fallbackMarket = await getMarketById(XI_MARKET_ID);
+      if (Math.min(...fallbackMarket.prices) >= maximumCheapPrice) {
+        throw new Error(`No LP candidate below ${maximumCheapPrice}`);
+      }
+      markets = [fallbackMarket];
+    }
     const evaluations = (
       await Promise.all(markets.slice(0, 30).map((market) => evaluateMarket(market, activeBudget)))
     ).filter(Boolean);
     if (evaluations.length === 0) {
-      const fallback = await evaluateMarket(await getMarketById(XI_MARKET_ID), activeBudget);
+      const fallbackMarket = await getMarketById(XI_MARKET_ID);
+      const fallback = Math.min(...fallbackMarket.prices) < maximumCheapPrice
+        ? await evaluateMarket(fallbackMarket, activeBudget)
+        : null;
       if (!fallback) throw new Error("No safe long-duration LP candidate found");
       evaluations.push(fallback);
     }
     evaluations.sort((a, b) => b.estimatedDailyReward - a.estimatedDailyReward);
-    return new LongLpPaperStrategy({ budget, activeBudget, evaluation: evaluations[0] });
+    return new LongLpPaperStrategy({
+      budget,
+      activeBudget,
+      evaluation: evaluations[0],
+      maximumCheapPrice,
+      maintainQuotes,
+    });
   }
 
   static async restore(saved) {
@@ -102,6 +124,8 @@ export class LongLpPaperStrategy {
     strategy.name = "long_lp_rewards";
     strategy.budget = Number(saved.budget);
     strategy.activeBudget = Number(saved.activeBudget);
+    strategy.maximumCheapPrice = Number(saved.maximumCheapPrice ?? 0.05);
+    strategy.maintainQuotes = Boolean(saved.maintainQuotes);
     strategy.market = market;
     strategy.cheap = saved.cheap;
     strategy.book = book;
@@ -118,15 +142,24 @@ export class LongLpPaperStrategy {
     strategy.lastStepAt = Date.now();
     strategy.lastMarketRefreshAt = Date.now();
     strategy.initialEstimate = Number(saved.initialEstimate ?? 0);
+    strategy.quoteRefreshes = Number(saved.quoteRefreshes ?? 1);
     strategy.bidOrder = strategy.restoreOrder(saved.bidOrder, book.bids);
     strategy.askOrder = strategy.restoreOrder(saved.askOrder, book.asks);
     return strategy;
   }
 
-  constructor({ budget, activeBudget, evaluation }) {
+  constructor({
+    budget,
+    activeBudget,
+    evaluation,
+    maximumCheapPrice = 0.05,
+    maintainQuotes = false,
+  }) {
     this.name = "long_lp_rewards";
     this.budget = budget;
     this.activeBudget = activeBudget;
+    this.maximumCheapPrice = maximumCheapPrice;
+    this.maintainQuotes = maintainQuotes;
     this.market = evaluation.market;
     this.cheap = evaluation.cheap;
     this.book = evaluation.book;
@@ -158,6 +191,7 @@ export class LongLpPaperStrategy {
       placedAtMs: Date.now(),
     };
     this.initialEstimate = evaluation.estimatedDailyReward;
+    this.quoteRefreshes = 1;
   }
 
   restoreOrder(saved, levels) {
@@ -176,6 +210,8 @@ export class LongLpPaperStrategy {
       version: 1,
       budget: this.budget,
       activeBudget: this.activeBudget,
+      maximumCheapPrice: this.maximumCheapPrice,
+      maintainQuotes: this.maintainQuotes,
       marketId: this.market.id,
       cheap: this.cheap,
       position: this.position,
@@ -188,6 +224,7 @@ export class LongLpPaperStrategy {
       fills: this.fills,
       startedAt: this.startedAt,
       initialEstimate: this.initialEstimate,
+      quoteRefreshes: this.quoteRefreshes,
       bidOrder: this.bidOrder,
       askOrder: this.askOrder,
     };
@@ -208,6 +245,7 @@ export class LongLpPaperStrategy {
       this.askOrder.queueAhead = levelSizeAt(this.book.asks, this.askOrder.price);
       this.askOrder.placedAtMs = now;
     }
+    this.maintainTwoSidedQuotes();
     return this.snapshot("initialized");
   }
 
@@ -235,6 +273,7 @@ export class LongLpPaperStrategy {
       this.applyTrade(trade);
     }
     this.repriceIfNeeded();
+    this.maintainTwoSidedQuotes();
     this.accrueReward(elapsedSeconds);
     return this.snapshot("tick");
   }
@@ -332,6 +371,40 @@ export class LongLpPaperStrategy {
     }
   }
 
+  maintainTwoSidedQuotes() {
+    if (!this.maintainQuotes) return false;
+    const minimumSize = this.market.rewardsMinSize;
+    const bidRemaining = this.bidOrder?.remaining ?? 0;
+    const askRemaining = this.askOrder?.remaining ?? 0;
+    if (bidRemaining >= minimumSize && askRemaining >= minimumSize) return false;
+
+    const bid = this.book.bestBid;
+    const ask = this.book.bestAsk;
+    if (!(bid > 0) || !(ask > bid) || !(this.position > 0) || !(this.cash > 0)) return false;
+    const capacity = Math.floor(Math.min(
+      this.activeBudget / (bid + ask),
+      this.position,
+      this.cash / bid,
+    ) * 1e6) / 1e6;
+    if (capacity < minimumSize) return false;
+
+    const placedAtMs = Date.now();
+    this.bidOrder = {
+      price: bid,
+      remaining: capacity,
+      queueAhead: levelSizeAt(this.book.bids, bid),
+      placedAtMs,
+    };
+    this.askOrder = {
+      price: ask,
+      remaining: capacity,
+      queueAhead: levelSizeAt(this.book.asks, ask),
+      placedAtMs,
+    };
+    this.quoteRefreshes += 1;
+    return true;
+  }
+
   accrueReward(elapsedSeconds) {
     if (!(this.bidOrder?.remaining > 0) || !(this.askOrder?.remaining > 0)) return;
     if (
@@ -380,6 +453,7 @@ export class LongLpPaperStrategy {
       equity: roundMoney(equity),
       netPnl: roundMoney(equity - this.budget),
       fills: this.fills.length,
+      quoteRefreshes: this.quoteRefreshes,
       initialEstimatedRewardPerDay: roundMoney(this.initialEstimate),
       seedCost: roundMoney(this.seedCost),
       seedAveragePrice: roundMoney(this.seedAveragePrice),

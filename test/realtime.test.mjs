@@ -148,3 +148,51 @@ test("strategy checkpoints contain the capital needed for a conservative resume"
   assert.equal(savedCrypto.orders.length, 2);
   assert.equal(savedCrypto.market.conditionId, "condition");
 });
+
+test("LP quote maintenance restores two reward-eligible legs conservatively", () => {
+  const market = {
+    id: "lp-market",
+    conditionId: "lp-condition",
+    question: "LP test",
+    tokenIds: ["cheap", "other"],
+    outcomes: ["Yes", "No"],
+    rewardsMinSize: 50,
+    rewardsMaxSpread: 3,
+    dailyRewardPool: 10,
+    feesEnabled: false,
+  };
+  const book = {
+    bestBid: 0.028,
+    bestAsk: 0.029,
+    tickSize: 0.001,
+    minOrderSize: 5,
+    bids: [{ price: 0.028, size: 1_000 }],
+    asks: [{ price: 0.029, size: 1_000 }],
+  };
+  const strategy = new LongLpPaperStrategy({
+    budget: 200,
+    activeBudget: 120,
+    maximumCheapPrice: 0.05,
+    maintainQuotes: true,
+    evaluation: {
+      market,
+      cheap: { index: 0, tokenId: "cheap", complementTokenId: "other", outcome: "Yes" },
+      book,
+      plan: { shares: 2_000, inventoryCost: 58, averageAsk: 0.029, fills: [{ price: 0.029, size: 2_000 }] },
+      estimatedDailyReward: 0.75,
+    },
+  });
+  strategy.askOrder = null;
+  const refreshed = strategy.maintainTwoSidedQuotes();
+  assert.equal(refreshed, true);
+  assert.equal(strategy.quoteRefreshes, 2);
+  assert.ok(strategy.bidOrder.remaining >= market.rewardsMinSize);
+  assert.equal(strategy.bidOrder.remaining, strategy.askOrder.remaining);
+  assert.equal(strategy.bidOrder.queueAhead, 1_000);
+
+  strategy.position = 0;
+  strategy.askOrder = null;
+  const priorBid = strategy.bidOrder;
+  assert.equal(strategy.maintainTwoSidedQuotes(), false);
+  assert.equal(strategy.bidOrder, priorBid);
+});

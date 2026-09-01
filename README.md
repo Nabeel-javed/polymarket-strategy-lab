@@ -1,6 +1,10 @@
 # Polymarket Strategy Lab
 
-Read-only paper trading for two strategies with a virtual $200 portfolio:
+The active hosted experiment is now LP-only. The earlier mixed LP/BTC experiment
+is preserved in Git history and under the tag `mixed-strategy-checkpoint-2026-09-01`.
+
+The hosted run uses a virtual $200 LP-only portfolio. The local one-shot runner
+also retains the original two-strategy comparison for reproducibility:
 
 - $100 long-duration liquidity rewards
 - $100 BTC 15-minute maker rebates
@@ -61,15 +65,18 @@ Each run writes `metadata.json`, `events.jsonl`, and `summary.json` under `runs/
 
 ## Seven-day GitHub experiment
 
-The workflow in `.github/workflows/week-paper-test.yml` runs the same virtual
-$200 portfolio for seven days without requiring a laptop to stay online. GitHub-hosted
+The workflow in `.github/workflows/week-paper-test.yml` runs a virtual $200 LP-only
+portfolio for seven days without requiring a laptop to stay online. It selects only
+markets whose cheap outcome is below five cents, allocates at most $120 to the two
+working legs, and keeps $80 as a buffer. When either leg falls below the market's
+minimum reward size, it conservatively reposts balanced quotes at the back of the
+visible queue. GitHub-hosted
 jobs are capped at six hours, so each job runs for five and a half hours, checkpoints
 the strategy state, then dispatches a fresh continuation. The handoff is conservative:
 orders rejoin the visible queue and no rewards or fills are credited during the gap.
 
-Every BTC 15-minute market is settled before its ending equity becomes the starting
-equity for the next market. Long-LP inventory, cash, reward estimates, and order sizes
-carry across jobs. Raw per-segment evidence is retained as a workflow artifact for 14
+Long-LP inventory, cash, reward estimates, and order sizes carry across jobs. Raw
+per-segment evidence is retained as a workflow artifact for 14
 days; cumulative state and the dashboard data are committed to the repository.
 
 Start it manually with the workflow input `reset=true`. Continuations use
