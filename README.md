@@ -23,9 +23,12 @@ Long-duration LP:
 - discovers active cheap-outcome markets with a daily reward pool;
 - excludes wide spreads and markets ending in fewer than seven days;
 - simulates purchasing inventory from executable asks;
+- includes each market's live taker-fee schedule in seed cost and capital allocation;
 - posts a bid and ask at the visible book;
 - joins behind visible queue depth;
 - accrues an estimated pro-rata reward only while both legs qualify;
+- applies Polymarket's $1 daily payout minimum at each midnight-UTC epoch and
+  excludes sub-threshold estimates from equity;
 - marks inventory at the executable bid.
 
 BTC maker rebates:

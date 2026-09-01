@@ -1,8 +1,13 @@
 export const CRYPTO_FEE_RATE = 0.07;
 export const CRYPTO_REBATE_RATE = 0.20;
 
-export function feeEquivalent(shares, price, feeRate = CRYPTO_FEE_RATE) {
-  return shares * feeRate * price * (1 - price);
+export function feeEquivalent(
+  shares,
+  price,
+  feeRate = CRYPTO_FEE_RATE,
+  exponent = 1,
+) {
+  return shares * feeRate * (price * (1 - price)) ** exponent;
 }
 
 export function makerRebate(
@@ -10,8 +15,9 @@ export function makerRebate(
   price,
   feeRate = CRYPTO_FEE_RATE,
   rebateRate = CRYPTO_REBATE_RATE,
+  exponent = 1,
 ) {
-  return feeEquivalent(shares, price, feeRate) * rebateRate;
+  return feeEquivalent(shares, price, feeRate, exponent) * rebateRate;
 }
 
 export function orderScoreFactor(maxSpreadCents, midpoint, price) {
@@ -40,27 +46,37 @@ export function maxPairedBidShares(activeBudget, firstBid, secondBid) {
   return Math.floor((activeBudget / costPerPair) * 100) / 100;
 }
 
-export function consumeAsksForBudget(asks, bidPrice, budget) {
+export function consumeAsksForBudget(
+  asks,
+  bidPrice,
+  budget,
+  { feeRate = 0, feeExponent = 1 } = {},
+) {
   let cashLeft = budget;
   let shares = 0;
   let inventoryCost = 0;
+  let takerFees = 0;
   const fills = [];
 
   for (const level of [...asks].sort((a, b) => a.price - b.price)) {
-    const allInPerShare = level.price + bidPrice;
+    const feePerShare = feeEquivalent(1, level.price, feeRate, feeExponent);
+    const allInPerShare = level.price + bidPrice + feePerShare;
     if (!(allInPerShare > 0) || cashLeft <= 0) break;
     const take = Math.min(level.size, cashLeft / allInPerShare);
     if (take <= 0) continue;
     shares += take;
     inventoryCost += take * level.price;
+    takerFees += take * feePerShare;
     cashLeft -= take * allInPerShare;
-    fills.push({ price: level.price, size: take });
+    fills.push({ price: level.price, size: take, takerFee: take * feePerShare });
     if (take < level.size) break;
   }
 
   return {
     shares,
     inventoryCost,
+    takerFees,
+    totalSeedCost: inventoryCost + takerFees,
     bidReserve: shares * bidPrice,
     cashLeft,
     averageAsk: shares > 0 ? inventoryCost / shares : 0,

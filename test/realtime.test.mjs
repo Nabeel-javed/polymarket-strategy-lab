@@ -116,12 +116,13 @@ test("strategy checkpoints contain the capital needed for a conservative resume"
       market,
       cheap: { index: 0, tokenId: "cheap", complementTokenId: "other", outcome: "Yes" },
       book,
-      plan: { shares: 100, inventoryCost: 5, averageAsk: 0.05, fills: [{ price: 0.05, size: 100 }] },
+      plan: { shares: 100, inventoryCost: 5, takerFees: 0.2, averageAsk: 0.05, fills: [{ price: 0.05, size: 100 }] },
       estimatedDailyReward: 1,
     },
   });
   const savedLp = lp.exportState();
-  assert.equal(savedLp.cash, 95);
+  assert.equal(savedLp.cash, 94.8);
+  assert.equal(savedLp.takerFeesPaid, 0.2);
   assert.equal(savedLp.position, 100);
   assert.equal(savedLp.bidOrder.remaining, 100);
 
@@ -195,4 +196,48 @@ test("LP quote maintenance restores two reward-eligible legs conservatively", ()
   const priorBid = strategy.bidOrder;
   assert.equal(strategy.maintainTwoSidedQuotes(), false);
   assert.equal(strategy.bidOrder, priorBid);
+});
+
+test("LP daily rewards below one dollar are forfeited instead of counted as equity", () => {
+  const strategy = new LongLpPaperStrategy({
+    budget: 100,
+    activeBudget: 60,
+    maintainQuotes: false,
+    evaluation: {
+      market: {
+        id: "lp-market",
+        conditionId: "lp-condition",
+        question: "LP reward threshold test",
+        tokenIds: ["cheap", "other"],
+        outcomes: ["Yes", "No"],
+        rewardsMinSize: 50,
+        rewardsMaxSpread: 3,
+        dailyRewardPool: 10,
+        feesEnabled: false,
+      },
+      cheap: { index: 0, tokenId: "cheap", complementTokenId: "other", outcome: "Yes" },
+      book: {
+        bestBid: 0.04,
+        bestAsk: 0.05,
+        tickSize: 0.01,
+        minOrderSize: 5,
+        bids: [{ price: 0.04, size: 1_000 }],
+        asks: [{ price: 0.05, size: 1_000 }],
+      },
+      plan: { shares: 500, inventoryCost: 25, takerFees: 0, averageAsk: 0.05, fills: [] },
+      estimatedDailyReward: 0.75,
+    },
+  });
+  strategy.rewardEpochDate = "2026-09-01";
+  strategy.pendingRewardEstimate = 0.75;
+  assert.equal(strategy.snapshot("pending").rewardsAccrued, 0);
+  strategy.rollRewardEpoch(Date.parse("2026-09-02T00:00:01Z"));
+  assert.equal(strategy.rewardsPaid, 0);
+  assert.equal(strategy.forfeitedRewardEstimate, 0.75);
+
+  strategy.pendingRewardEstimate = 1.25;
+  assert.equal(strategy.snapshot("payable").rewardsAccrued, 1.25);
+  strategy.rollRewardEpoch(Date.parse("2026-09-03T00:00:01Z"));
+  assert.equal(strategy.rewardsPaid, 1.25);
+  assert.equal(strategy.pendingRewardEstimate, 0);
 });

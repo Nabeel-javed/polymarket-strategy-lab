@@ -14,6 +14,7 @@ import {
 test("crypto fee equivalent and maker rebate at 50 cents", () => {
   assert.ok(Math.abs(feeEquivalent(20, 0.5) - 0.35) < 1e-12);
   assert.ok(Math.abs(makerRebate(20, 0.5) - 0.07) < 1e-12);
+  assert.ok(Math.abs(feeEquivalent(20, 0.5, 0.07, 2) - 0.0875) < 1e-12);
 });
 
 test("LP score is one quarter at half of maximum spread", () => {
@@ -41,6 +42,24 @@ test("inventory acquisition includes the resting bid reserve", () => {
   );
   assert.ok(Math.abs(result.shares - 659.3406593406594) < 1e-8);
   assert.ok(Math.abs(result.inventoryCost + result.bidReserve - 60) < 1e-8);
+});
+
+test("inventory acquisition reserves the exact live taker fee", () => {
+  const noFee = consumeAsksForBudget([{ price: 0.029, size: 10_000 }], 0.028, 120);
+  const withFee = consumeAsksForBudget(
+    [{ price: 0.029, size: 10_000 }],
+    0.028,
+    120,
+    { feeRate: 0.05, feeExponent: 1 },
+  );
+  assert.ok(withFee.shares < noFee.shares);
+  assert.ok(withFee.takerFees > 0);
+  assert.ok(Math.abs(
+    withFee.inventoryCost + withFee.takerFees + withFee.bidReserve - 120,
+  ) < 1e-8);
+  assert.ok(Math.abs(
+    withFee.takerFees - feeEquivalent(withFee.shares, 0.029, 0.05, 1),
+  ) < 1e-8);
 });
 
 test("queue-ahead prevents optimistic fills", () => {

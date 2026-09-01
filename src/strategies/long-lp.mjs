@@ -17,6 +17,11 @@ import {
 } from "../api.mjs";
 
 const XI_MARKET_ID = "559651";
+const MINIMUM_REWARD_PAYOUT = 1;
+
+function utcDay(timestampMs) {
+  return new Date(timestampMs).toISOString().slice(0, 10);
+}
 
 function cheapOutcome(market) {
   const index = market.prices.indexOf(Math.min(...market.prices));
@@ -51,7 +56,10 @@ async function evaluateMarket(market, activeBudget) {
   if (!cheap.tokenId) return null;
   const book = await getBook(cheap.tokenId);
   if (!(book.bestBid > 0) || !(book.bestAsk < 1)) return null;
-  const plan = consumeAsksForBudget(book.asks, book.bestBid, activeBudget);
+  const plan = consumeAsksForBudget(book.asks, book.bestBid, activeBudget, {
+    feeRate: market.feesEnabled ? Number(market.feeSchedule?.rate ?? 0) : 0,
+    feeExponent: Number(market.feeSchedule?.exponent ?? 1),
+  });
   if (plan.shares < market.rewardsMinSize) return null;
   if (plan.averageAsk - book.bestAsk > Math.max(0.002, book.tickSize * 2)) return null;
 
@@ -133,7 +141,12 @@ export class LongLpPaperStrategy {
     strategy.cash = Number(saved.cash);
     strategy.seedCost = Number(saved.seedCost);
     strategy.seedAveragePrice = Number(saved.seedAveragePrice);
-    strategy.rewardsAccrued = Number(saved.rewardsAccrued ?? 0);
+    strategy.takerFeesPaid = Number(saved.takerFeesPaid ?? 0);
+    strategy.rewardsPaid = Number(saved.rewardsPaid ?? saved.rewardsAccrued ?? 0);
+    strategy.pendingRewardEstimate = Number(saved.pendingRewardEstimate ?? 0);
+    strategy.forfeitedRewardEstimate = Number(saved.forfeitedRewardEstimate ?? 0);
+    strategy.rewardMinimumPayout = Number(saved.rewardMinimumPayout ?? MINIMUM_REWARD_PAYOUT);
+    strategy.rewardEpochDate = saved.rewardEpochDate ?? utcDay(Date.now());
     strategy.rebatesAccrued = Number(saved.rebatesAccrued ?? 0);
     strategy.realizedSpreadPnl = Number(saved.realizedSpreadPnl ?? 0);
     strategy.fills = Array.isArray(saved.fills) ? saved.fills : [];
@@ -164,10 +177,15 @@ export class LongLpPaperStrategy {
     this.cheap = evaluation.cheap;
     this.book = evaluation.book;
     this.position = evaluation.plan.shares;
-    this.cash = budget - evaluation.plan.inventoryCost;
+    this.takerFeesPaid = Number(evaluation.plan.takerFees ?? 0);
+    this.cash = budget - evaluation.plan.inventoryCost - this.takerFeesPaid;
     this.seedCost = evaluation.plan.inventoryCost;
     this.seedAveragePrice = evaluation.plan.averageAsk;
-    this.rewardsAccrued = 0;
+    this.rewardsPaid = 0;
+    this.pendingRewardEstimate = 0;
+    this.forfeitedRewardEstimate = 0;
+    this.rewardMinimumPayout = MINIMUM_REWARD_PAYOUT;
+    this.rewardEpochDate = utcDay(Date.now());
     this.rebatesAccrued = 0;
     this.realizedSpreadPnl = 0;
     this.fills = [];
@@ -218,7 +236,12 @@ export class LongLpPaperStrategy {
       cash: this.cash,
       seedCost: this.seedCost,
       seedAveragePrice: this.seedAveragePrice,
-      rewardsAccrued: this.rewardsAccrued,
+      takerFeesPaid: this.takerFeesPaid,
+      rewardsPaid: this.rewardsPaid,
+      pendingRewardEstimate: this.pendingRewardEstimate,
+      forfeitedRewardEstimate: this.forfeitedRewardEstimate,
+      rewardMinimumPayout: this.rewardMinimumPayout,
+      rewardEpochDate: this.rewardEpochDate,
       rebatesAccrued: this.rebatesAccrued,
       realizedSpreadPnl: this.realizedSpreadPnl,
       fills: this.fills,
@@ -274,7 +297,7 @@ export class LongLpPaperStrategy {
     }
     this.repriceIfNeeded();
     this.maintainTwoSidedQuotes();
-    this.accrueReward(elapsedSeconds);
+    this.accrueReward(elapsedSeconds, now);
     return this.snapshot("tick");
   }
 
@@ -334,6 +357,7 @@ export class LongLpPaperStrategy {
           price,
           Number(this.market.feeSchedule?.rate ?? 0),
           Number(this.market.feeSchedule?.rebateRate ?? 0),
+          Number(this.market.feeSchedule?.exponent ?? 1),
         )
       : 0;
     this.rebatesAccrued += rebate;
@@ -351,6 +375,7 @@ export class LongLpPaperStrategy {
           price,
           Number(this.market.feeSchedule?.rate ?? 0),
           Number(this.market.feeSchedule?.rebateRate ?? 0),
+          Number(this.market.feeSchedule?.exponent ?? 1),
         )
       : 0;
     this.rebatesAccrued += rebate;
@@ -405,7 +430,21 @@ export class LongLpPaperStrategy {
     return true;
   }
 
-  accrueReward(elapsedSeconds) {
+  rollRewardEpoch(now) {
+    const nextEpochDate = utcDay(now);
+    if (nextEpochDate === this.rewardEpochDate) return false;
+    if (this.pendingRewardEstimate >= this.rewardMinimumPayout) {
+      this.rewardsPaid += this.pendingRewardEstimate;
+    } else {
+      this.forfeitedRewardEstimate += this.pendingRewardEstimate;
+    }
+    this.pendingRewardEstimate = 0;
+    this.rewardEpochDate = nextEpochDate;
+    return true;
+  }
+
+  accrueReward(elapsedSeconds, now = Date.now()) {
+    this.rollRewardEpoch(now);
     if (!(this.bidOrder?.remaining > 0) || !(this.askOrder?.remaining > 0)) return;
     if (
       this.bidOrder.remaining < this.market.rewardsMinSize ||
@@ -427,12 +466,18 @@ export class LongLpPaperStrategy {
     const competition = currentCompetition(this.book, this.market);
     const hourlyRate =
       (this.market.dailyRewardPool * estimatedRewardShare(ownScore, competition)) / 24;
-    this.rewardsAccrued += hourlyRate * (elapsedSeconds / 3600);
+    this.pendingRewardEstimate += hourlyRate * (elapsedSeconds / 3600);
   }
 
   snapshot(event) {
     const inventoryMark = this.position * this.book.bestBid;
-    const equity = this.cash + inventoryMark + this.rewardsAccrued + this.rebatesAccrued;
+    const eligiblePendingReward = this.pendingRewardEstimate >= this.rewardMinimumPayout
+      ? this.pendingRewardEstimate
+      : 0;
+    const rewardsAccrued = this.rewardsPaid + eligiblePendingReward;
+    const grossRewardEstimate =
+      this.rewardsPaid + this.pendingRewardEstimate + this.forfeitedRewardEstimate;
+    const equity = this.cash + inventoryMark + rewardsAccrued + this.rebatesAccrued;
     return {
       event,
       strategy: this.name,
@@ -447,13 +492,21 @@ export class LongLpPaperStrategy {
       cash: roundMoney(this.cash),
       bidRemaining: roundMoney(this.bidOrder?.remaining ?? 0),
       askRemaining: roundMoney(this.askOrder?.remaining ?? 0),
-      rewardsAccrued: roundMoney(this.rewardsAccrued),
+      rewardsAccrued: roundMoney(rewardsAccrued),
+      rewardsPaid: roundMoney(this.rewardsPaid),
+      pendingRewardEstimate: roundMoney(this.pendingRewardEstimate),
+      forfeitedRewardEstimate: roundMoney(this.forfeitedRewardEstimate),
+      grossRewardEstimate: roundMoney(grossRewardEstimate),
+      rewardMinimumPayout: this.rewardMinimumPayout,
+      rewardEpochDate: this.rewardEpochDate,
       rebatesAccrued: roundMoney(this.rebatesAccrued),
       inventoryMark: roundMoney(inventoryMark),
       equity: roundMoney(equity),
       netPnl: roundMoney(equity - this.budget),
       fills: this.fills.length,
       quoteRefreshes: this.quoteRefreshes,
+      takerFeesPaid: roundMoney(this.takerFeesPaid),
+      seedTotalCost: roundMoney(this.seedCost + this.takerFeesPaid),
       initialEstimatedRewardPerDay: roundMoney(this.initialEstimate),
       seedCost: roundMoney(this.seedCost),
       seedAveragePrice: roundMoney(this.seedAveragePrice),
